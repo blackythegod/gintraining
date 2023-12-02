@@ -47,24 +47,10 @@ func (h Handler) RegisterHandler() gin.HandlerFunc {
 		}
 	}
 }
-func (h Handler) SignUp(c *gin.Context) {
-	var user *models.User
-	err := c.BindJSON(&user)
-	if err != nil {
-		log.Printf("couldn't bind json: %s", err)
-	}
-	log.Println(user)
-	h.db.Create(&user)
-	c.JSON(200, &user)
-}
-
 func (h Handler) CheckMe(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
-	user, _ := c.Get(jwt.IdentityKey)
 	c.JSON(200, gin.H{
-		"userid":   claims[jwt.IdentityKey],
-		"username": user.(*models.Login).Username,
-		"text":     "Hello World.",
+		"username": claims[jwt.IdentityKey],
 	})
 }
 

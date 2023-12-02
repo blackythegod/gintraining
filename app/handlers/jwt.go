@@ -40,8 +40,11 @@ func authFunc(db *gorm.DB) func(c *gin.Context) (interface{}, error) {
 		if err != nil {
 			log.Print(err)
 		}
-		db.Find(&models.User{}, "username = ? AND password = ?", login.Username, login.Password)
-		if login.Username == "" {
+		err = db.
+			Where("username = ? AND password = ?", login.Username, login.Password).
+			First(&models.User{}).
+			Error
+		if err != nil {
 			return "", jwt.ErrFailedAuthentication
 		}
 		c.Request.Body = io.NopCloser(bytes.NewBuffer(b))
@@ -59,8 +62,7 @@ func loginResponseFunc(db *gorm.DB) func(c *gin.Context, code int, message strin
 		}
 		c.Writer.Header().Add("Access-Token", message)
 		c.Writer.Header().Add("Expire-Token", time.Format("2006-01-02 15:04:05"))
-		db.Find(&user, "username = ?", &user.Username)
-		c.JSON(code, &user.Username)
+		c.JSON(code, "logged in")
 	}
 }
 func payloadFunc(data interface{}) jwt.MapClaims {
